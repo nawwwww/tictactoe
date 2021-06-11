@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Practice</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        .title {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            font-size: 40px;
+            font-family: 'Times New Roman', Times, serif;
+        }
+
+        div.title:nth-child(2) {
+            font-size: 20px;
+        }
+
+        .flexwrapper {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        img {
+            height: 100%;
+            width: 100%;
+        }
+
+        .mainGame {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            grid-template-rows: repeat(3, 100px);
+        }
+
+        .mainGame>div {
+            background-color: hotpink;
+            box-sizing: border-box;
+            border-radius: 5%;
+            border: 2px solid white;
+        }
+
+        .chooseX {
+            width: 100px;
+            height: 100px;
+            border-radius: 15%;
+            background-image: url("8-grunge-x-brush-stroke-3.png");
+            background-size: cover;
+            margin: 15px;
+            background-color: greenyellow;
+        }
+
+        .chooseO {
+            width: 100px;
+            height: 100px;
+            border-radius: 15%;
+            background-image: url("grunge-circle-frame-2-983x1024.png");
+            background-size: cover;
+            margin: 15px;
+            background-color: cornflowerblue;
+        }
+
+        .output {
+            color: black;
+            font-size: 40px;
+            font-weight: bolder;
+            text-align: center;
+        }
+    </style>
+    <script src="select_side.js"></script>
+</head>
+
+<body>
+    <div class="title">My shitty game</div>
+    <div class="title">Pick your side</div>
+    <div class="flexwrapper">
+        <div><button class="chooseX"></button></div>
+        <div><button class="chooseO"></button></div>
+    </div>
+    <div class="flexwrapper">
+        <div class="mainGame">
+            <div class="field"></div>
+            <div class="field"></div>
+            <div class="field"></div>
+            <div class="field"></div>
+            <div class="field"></div>
+            <div class="field"></div>
+            <div class="field"></div>
+            <div class="field"></div>
+            <div class="field"></div>
+        </div>
+    </div>
+    <div class="output"></div>
+
+    </div>
+
+    <script>
+        window.addEventListener('load', function (event) {
+            let field = [];
+            let player = undefined;
+            let bot = undefined;
+            let currentMove = undefined;
+
+            // Selecting X or O to play
+            document.querySelector('.chooseX').addEventListener('click', function (event) {
+                player = 'X';
+                bot = 'O';
+                currentMove = player;
+                document.querySelector('.chooseO').remove();
+            })
+
+            document.querySelector('.chooseO').addEventListener('click', function (event) {
+                player = 'O';
+                bot = 'X';
+                currentMove = bot;
+                field[4] = 'X';
+                currentMove = player;
+                render(field);
+                document.querySelector('.chooseX').remove();
+            })
+
+            // Setting win conditions
+            function is_win(player) {
+                // horizontal win
+                if (field[0] == player && field[1] == player && field[2] == player) {
+                    return player;
+                }
+                if (field[3] == player && field[4] == player && field[5] == player) {
+                    return player;
+                }
+                if (field[6] == player && field[7] == player && field[8] == player) {
+                    return player;
+                }
+                // vertical win
+                if (field[0] == player && field[3] == player && field[6] == player) {
+                    return player;
+                }
+                if (field[1] == player && field[4] == player && field[7] == player) {
+                    return player;
+                }
+                if (field[2] == player && field[5] == player && field[8] == player) {
+                    return player;
+                }
+                // diagonal win
+                if (field[0] == player && field[4] == player && field[8] == player) {
+                    return player;
+                }
+                if (field[2] == player && field[4] == player && field[6] == player) {
+                    return player;
+                }
+                else {
+                    return false;
+                }
+            }
+
+            function is_loss(player) {
+                let opponent = null;
+                if (player == 'X') {
+                    opponent = 'O';
+                }
+                else {
+                    opponent = 'X';
+                }
+                if (field[0] == opponent && field[1] == opponent && field[2] == opponent) {
+                    return true;
+                }
+                if (field[3] == opponent && field[4] == opponent && field[5] == opponent) {
+                    return true;
+                }
+                if (field[6] == opponent && field[7] == opponent && field[8] == opponent) {
+                    return true;
+                }
+
+                if (field[0] == opponent && field[3] == opponent && field[6] == opponent) {
+                    return true;
+                }
+                if (field[1] == opponent && field[4] == opponent && field[7] == opponent) {
+                    return true;
+                }
+                if (field[2] == opponent && field[5] == opponent && field[8] == opponent) {
+                    return true;
+                }
+
+                if (field[0] == opponent && field[4] == opponent && field[8] == opponent) {
+                    return true;
+                }
+                if (field[2] == opponent && field[4] == opponent && field[6] == opponent) {
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            }
+
+            function is_draw(player) {
+                if (!is_win(player) && !is_loss(player) && countMoves(field) == 0) {
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            }
+
+            function stop () {
+                document.querySelector('.mainGame').style.display = 'none';
+            }
+
+            function countMoves(currentField) {
+                let count = 0;
+                for (let i = 0; i < currentField.length; i++) {
+                    if (currentField[i] == null) {
+                        count++;
+                    }
+                }
+                return count;
+            }
+
+            function render(currentField) {
+                let pic = document.createElement('img');
+                for (let i = 0; i < currentField.length; i++) {
+                    if (currentField[i] == 'X' && document.getElementsByClassName('field')[i].childNodes.length == 0) {
+                        pic.src = '8-grunge-x-brush-stroke-3.png';
+                        document.getElementsByClassName('field')[i].append(pic);
+                    }
+                    if (currentField[i] == 'O' && document.getElementsByClassName('field')[i].childNodes.length == 0) {
+                        pic.src = 'grunge-circle-frame-2-983x1024.png';
+                        document.getElementsByClassName('field')[i].append(pic);
+                    }
+                }
+            }
+
+            for (let i = 0; i < document.getElementsByClassName('field').length; i++) {
+                field.push(null);
+                document.getElementsByClassName('field')[i].addEventListener('click', function (event) {
+                    console.log(player, field[i], currentMove);
+                    if (player != undefined && field[i] == null && currentMove == player) {
+                        field[i] = player;
+                        render(field);
+                        currentMove = bot;
+                    }
+                    if (is_win(player)) {
+                        document.querySelector('.output').innerHTML = 'You WON!';
+                        stop();
+                    }
+                    else if (is_loss(player)) {
+                        document.querySelector('.output').innerHTML = 'You LOST!';
+                        stop();
+                    }
+                    else if (is_draw(player)) {
+                        document.querySelector('.output').innerHTML = 'Draw!';
+                        stop();
+                    }
+                })
+            }
+
+            document.querySelector('.mainGame').addEventListener('click', function (event) {
+                if (currentMove == bot) {
+                    calculateAImove();
+                    render(field);
+                }
+                if (is_win(player)) {
+                    document.querySelector('.output').innerHTML = 'You WON!';
+                    stop();
+                }
+                else if (is_loss(player)) {
+                    document.querySelector('.output').innerHTML = 'You LOST!';
+                    stop();
+                }
+                else if (is_draw(player)) {
+                    document.querySelector('.output').innerHTML = 'Draw!';
+                    stop();
+                }
+            })
+
+
+
+            function calculateAImove() {
+                let bestScore = -Infinity;
+                let aiMove;
+                for (let i = 0; i < field.length; i++) {
+                    if (field[i] == null) {
+                        field[i] = bot;
+                        let score = evaluate_turn_weight(field, 0, false);
+                        field[i] = null;
+                        if (score > bestScore) {
+                            bestScore = score;
+                            aiMove = i;
+                        }
+                    }
+                }
+                field[aiMove] = bot;
+                currentMove = player;
+            }
+
+            let scores = {
+                win: 100,
+                loss: -100,
+                draw: 0
+            };
+
+            function evaluate_turn_weight(currentField, depth, isMaximizing) {
+                if (is_win(bot)) {
+                    return scores.win;
+                }
+                if (is_win(player)) {
+                    return scores.loss;
+                }
+                if (is_draw(bot) || is_draw(player)) {
+                    return scores.draw;
+                }
+
+                if (isMaximizing) {
+                    let bestScore = -Infinity;
+                    for (let i = 0; i < currentField.length; i++) {
+                        if (currentField[i] == null) {
+                            currentField[i] = bot;
+                            let score = evaluate_turn_weight(currentField, depth + 1, false);
+                            currentField[i] = null;
+                            bestScore = Math.max(score, bestScore);
+                        }
+                    }
+                    return bestScore;
+                } else {
+                    let bestScore = Infinity;
+                    for (let i = 0; i < currentField.length; i++) {
+                        if (currentField[i] == null) {
+                            currentField[i] = player;
+                            let score = evaluate_turn_weight(currentField, depth + 1, true);
+                            currentField[i] = null;
+                            bestScore = Math.min(score, bestScore);
+                        }
+                    }
+                    return bestScore;
+                }
+            }
+        })
+    </script>
+
+</body>
+
+</html>
